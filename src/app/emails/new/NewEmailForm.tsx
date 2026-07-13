@@ -3,9 +3,17 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Priority, EmailStatus } from '@prisma/client';
+import type { Priority, EmailStatus } from '@prisma/client';
 import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import { createEmail } from '../actions';
+
+const PRIORITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH'] as const;
+const STATUS_OPTIONS = [
+  'NEEDS_ACTION',
+  'WAITING_REPLY',
+  'FORWARDED',
+  'CLOSED',
+] as const;
 
 export default function NewEmailForm() {
   const router = useRouter();
@@ -15,8 +23,8 @@ export default function NewEmailForm() {
   const [senderEmail, setSenderEmail] = useState('');
   const [company, setCompany] = useState('');
   const [body, setBody] = useState('');
-  const [priority, setPriority] = useState<Priority>(Priority.MEDIUM);
-  const [status, setStatus] = useState<EmailStatus>(EmailStatus.NEEDS_ACTION);
+  const [priority, setPriority] = useState<Priority>('MEDIUM');
+  const [status, setStatus] = useState<EmailStatus>('NEEDS_ACTION');
   const [dueDate, setDueDate] = useState('');
   const [assignedContactText, setAssignedContactText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -154,7 +162,7 @@ export default function NewEmailForm() {
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
               >
-                {Object.values(Priority).map((p) => (
+                {PRIORITY_OPTIONS.map((p) => (
                   <option key={p} value={p}>
                     {p}
                   </option>
@@ -168,9 +176,9 @@ export default function NewEmailForm() {
                 value={status}
                 onChange={(e) => setStatus(e.target.value as EmailStatus)}
               >
-                {Object.values(EmailStatus).map((s) => (
+                {STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
-                    {s.replace('_', ' ')}
+                    {s.replaceAll('_', ' ')}
                   </option>
                 ))}
               </select>
