@@ -1,0 +1,142 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  MANAGER
+  ADMIN
+  STAFF
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum EmailStatus {
+  NEEDS_ACTION
+  WAITING_REPLY
+  FORWARDED
+  CLOSED
+  ARCHIVED
+}
+
+enum ActionType {
+  REPLY
+  FORWARD
+  ASSIGN
+  FOLLOW_UP
+  CLOSE
+  NOTE
+}
+
+enum ContactRole {
+  EMPLOYEE
+  VENDOR
+  CLIENT
+}
+
+model User {
+  id         String     @id @default(uuid())
+  email      String     @unique
+  name       String
+  role       Role       @default(MANAGER)
+  actions    Action[]   @relation("UserActions")
+  auditLogs  AuditLog[] @relation("UserAuditLogs")
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Contact {
+  id        String      @id @default(uuid())
+  name      String
+  email     String?
+  company   String?
+  role      ContactRole
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Email {
+  id                  String           @id @default(uuid())
+  subject             String
+  senderName          String
+  senderEmail         String
+  company             String?
+  bodySnippet         String
+  body                String           @db.Text
+  receivedAt          DateTime         @default(now())
+  priority            Priority         @default(MEDIUM)
+  status              EmailStatus      @default(NEEDS_ACTION)
+  dueDate             DateTime?
+  assignedContactText String?
+  actions             Action[]
+  replies             Reply[]
+  auditLogs           AuditLog[]
+  attachments         AttachmentMeta[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([status])
+  @@index([priority])
+  @@index([receivedAt])
+  @@index([dueDate])
+}
+
+model Action {
+  id            String     @id @default(uuid())
+  emailId       String
+  email         Email      @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  type          ActionType
+  description   String     @db.Text
+  performedById String
+  performedBy   User       @relation("UserActions", fields: [performedById], references: [id])
+  createdAt     DateTime   @default(now())
+
+  @@index([emailId])
+  @@index([performedById])
+}
+
+model Reply {
+  id          String   @id @default(uuid())
+  emailId     String
+  email       Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  sender      String
+  body        String   @db.Text
+  receivedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([emailId])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  emailId       String
+  email         Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  actionType    String
+  details       String   @db.Text
+  performedById String
+  performedBy   User     @relation("UserAuditLogs", fields: [performedById], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@index([emailId])
+  @@index([performedById])
+}
+
+model AttachmentMeta {
+  id        String   @id @default(uuid())
+  emailId   String
+  email     Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  filename  String
+  fileUrl   String
+  fileSize  Int
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  @@index([emailId])
+}

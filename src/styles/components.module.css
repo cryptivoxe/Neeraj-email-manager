@@ -1,0 +1,321 @@
+/* Component specific styling - Manager Email Tracker */
+
+/* KPI Cards Grid */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpiCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-shadow: var(--shadow-md);
+  transition: all 0.15s ease;
+}
+
+.kpiCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+}
+
+.kpiInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpiLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.kpiValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.kpiIconWrapper {
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Specific KPI Colors */
+.kpiNeedsAction { border-left: 4px solid var(--status-needs-action); }
+.kpiNeedsAction .kpiIconWrapper { background-color: rgba(239, 68, 68, 0.1); color: var(--status-needs-action); }
+
+.kpiWaitingReply { border-left: 4px solid var(--status-waiting-reply); }
+.kpiWaitingReply .kpiIconWrapper { background-color: rgba(245, 158, 11, 0.1); color: var(--status-waiting-reply); }
+
+.kpiForwarded { border-left: 4px solid var(--status-forwarded); }
+.kpiForwarded .kpiIconWrapper { background-color: rgba(59, 130, 246, 0.1); color: var(--status-forwarded); }
+
+.kpiClosed { border-left: 4px solid var(--status-closed); }
+.kpiClosed .kpiIconWrapper { background-color: rgba(16, 185, 129, 0.1); color: var(--status-closed); }
+
+.kpiOverdue { 
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(239, 68, 68, 0.05) 100%);
+}
+.kpiOverdue .kpiIconWrapper { background-color: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+/* Filter Container */
+.filterContainer {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.filterTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+/* Timeline & Audits */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background-color: var(--border);
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timelineNode {
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--panel-bg);
+  border: 2px solid var(--text-muted);
+}
+
+.timelineNodeActive {
+  border-color: var(--accent);
+  background-color: var(--accent);
+}
+
+.timelineHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timelineTitle {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.timelineTime {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.timelineContent {
+  font-size: 13px;
+  color: var(--text-secondary);
+  background-color: var(--panel-bg);
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  white-space: pre-line;
+}
+
+/* Detail Page Layout */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.detailSection {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.metaList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metaItem {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+
+.metaLabel {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metaValue {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+
+.quickActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Alert Banner */
+.overdueAlert {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #f87171;
+  margin-bottom: 20px;
+}
+
+.overdueText {
+  font-weight: 500;
+}
+
+/* Directory CSS */
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.contactCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.contactCard:hover {
+  border-color: var(--border-hover);
+}
+
+.contactHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.contactName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.contactDetailRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  gap: 8px;
+}
+
+.tab {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 13px;
+  background: transparent;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  outline: none;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+}
+
+.activeTab {
+  border-bottom-color: var(--accent);
+  color: var(--text-primary);
+  font-weight: 600;
+}
