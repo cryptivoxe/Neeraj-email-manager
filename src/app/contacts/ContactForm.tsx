@@ -3,16 +3,23 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createContact } from './actions';
-import { ContactRole } from '@prisma/client';
 import { UserPlus, Loader2 } from 'lucide-react';
+
+const CONTACT_ROLES = {
+  EMPLOYEE: 'EMPLOYEE',
+  VENDOR: 'VENDOR',
+  CLIENT: 'CLIENT',
+} as const;
+
+type ContactRole = typeof CONTACT_ROLES[keyof typeof CONTACT_ROLES];
 
 export default function ContactForm() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
-  const [role, setRole] = useState<ContactRole>(ContactRole.EMPLOYEE);
-  
+  const [role, setRole] = useState<ContactRole>(CONTACT_ROLES.EMPLOYEE);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -41,7 +48,7 @@ export default function ContactForm() {
       setName('');
       setEmail('');
       setCompany('');
-      setRole(ContactRole.EMPLOYEE);
+      setRole(CONTACT_ROLES.EMPLOYEE);
       router.refresh();
     } else {
       setError(result.error || 'Failed to create contact.');
@@ -70,9 +77,9 @@ export default function ContactForm() {
 
         <div className="form-group">
           <label>Full Name *</label>
-          <input 
-            type="text" 
-            placeholder="e.g. Johnathan Doe" 
+          <input
+            type="text"
+            placeholder="e.g. Johnathan Doe"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -81,9 +88,9 @@ export default function ContactForm() {
 
         <div className="form-group">
           <label>Email Address (Optional)</label>
-          <input 
-            type="email" 
-            placeholder="e.g. john@vendor.com" 
+          <input
+            type="email"
+            placeholder="e.g. john@vendor.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -91,9 +98,9 @@ export default function ContactForm() {
 
         <div className="form-group">
           <label>Company / Department (Optional)</label>
-          <input 
-            type="text" 
-            placeholder="e.g. Acme Logistics or Operations" 
+          <input
+            type="text"
+            placeholder="e.g. Acme Logistics or Operations"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
           />
@@ -101,14 +108,14 @@ export default function ContactForm() {
 
         <div className="form-group">
           <label>Directory Classification (Role) *</label>
-          <select 
-            value={role} 
+          <select
+            value={role}
             onChange={(e) => setRole(e.target.value as ContactRole)}
             required
           >
-            <option value={ContactRole.EMPLOYEE}>Employee / Team Member</option>
-            <option value={ContactRole.VENDOR}>Vendor / Partner Service</option>
-            <option value={ContactRole.CLIENT}>Client / Customer Account</option>
+            <option value={CONTACT_ROLES.EMPLOYEE}>Employee / Team Member</option>
+            <option value={CONTACT_ROLES.VENDOR}>Vendor / Partner Service</option>
+            <option value={CONTACT_ROLES.CLIENT}>Client / Customer Account</option>
           </select>
         </div>
 
