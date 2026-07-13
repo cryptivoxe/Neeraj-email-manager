@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Priority, EmailStatus } from '@prisma/client';
+import type { Priority, EmailStatus } from '@/lib/constants';
 import StatusBadge from './StatusBadge';
 import { formatDate, isOverdue } from '@/lib/utils';
 import { AlertCircle, User, Trash2 } from 'lucide-react';

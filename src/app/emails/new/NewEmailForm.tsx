@@ -3,16 +3,21 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { Priority, EmailStatus } from '@prisma/client';
 import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import { createEmail } from '../actions';
+import {
+  PRIORITY,
+  EMAIL_STATUS,
+  type Priority,
+  type EmailStatus,
+} from '@/lib/constants';
 
-const PRIORITY_OPTIONS = ['LOW', 'MEDIUM', 'HIGH'] as const;
+const PRIORITY_OPTIONS = Object.values(PRIORITY);
 const STATUS_OPTIONS = [
-  'NEEDS_ACTION',
-  'WAITING_REPLY',
-  'FORWARDED',
-  'CLOSED',
+  EMAIL_STATUS.NEEDS_ACTION,
+  EMAIL_STATUS.WAITING_REPLY,
+  EMAIL_STATUS.FORWARDED,
+  EMAIL_STATUS.CLOSED,
 ] as const;
 
 export default function NewEmailForm() {
@@ -23,8 +28,8 @@ export default function NewEmailForm() {
   const [senderEmail, setSenderEmail] = useState('');
   const [company, setCompany] = useState('');
   const [body, setBody] = useState('');
-  const [priority, setPriority] = useState<Priority>('MEDIUM');
-  const [status, setStatus] = useState<EmailStatus>('NEEDS_ACTION');
+  const [priority, setPriority] = useState<Priority>(PRIORITY.MEDIUM);
+  const [status, setStatus] = useState<EmailStatus>(EMAIL_STATUS.NEEDS_ACTION);
   const [dueDate, setDueDate] = useState('');
   const [assignedContactText, setAssignedContactText] = useState('');
   const [loading, setLoading] = useState(false);

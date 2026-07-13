@@ -8,7 +8,7 @@ import {
   updateEmailAssignee,
   updateEmailStatus,
 } from '../actions';
-import { ActionType, EmailStatus } from '@prisma/client';
+import { ACTION_TYPE, EMAIL_STATUS, type EmailStatus } from '@/lib/constants';
 import {
   UserPlus,
   FileText,
@@ -56,7 +56,7 @@ export default function TriagePanel({
     if (!noteContent.trim()) return;
 
     setLoading(true);
-    const result = await addEmailAction(emailId, ActionType.NOTE, noteContent.trim());
+    const result = await addEmailAction(emailId, ACTION_TYPE.NOTE, noteContent.trim());
     setLoading(false);
 
     if (result.success) {
@@ -277,9 +277,9 @@ export default function TriagePanel({
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value as EmailStatus)}
             >
-              {Object.values(EmailStatus).map((s) => (
+              {Object.values(EMAIL_STATUS).map((s) => (
                 <option key={s} value={s}>
-                  {s.replace('_', ' ')}
+                  {s.replace(/_/g, ' ')}
                 </option>
               ))}
             </select>
