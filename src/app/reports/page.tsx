@@ -5,6 +5,16 @@ import { Download, BarChart3, PieChart, Info, ShieldAlert } from 'lucide-react';
 
 export const revalidate = 0;
 
+type StatusGroup = {
+  status: string;
+  _count: number;
+};
+
+type PriorityGroup = {
+  priority: string;
+  _count: number;
+};
+
 export default async function ReportsPage() {
   let totalEmails = 0;
   const statusCounts = {
@@ -26,23 +36,23 @@ export default async function ReportsPage() {
     const now = new Date();
     totalEmails = await db.email.count();
 
-    const statuses = await db.email.groupBy({
+    const statuses = (await db.email.groupBy({
       by: ['status'],
       _count: true,
-    });
+    })) as StatusGroup[];
 
-    statuses.forEach((s) => {
+    statuses.forEach((s: StatusGroup) => {
       if (s.status in statusCounts) {
         statusCounts[s.status as keyof typeof statusCounts] = s._count;
       }
     });
 
-    const priorities = await db.email.groupBy({
+    const priorities = (await db.email.groupBy({
       by: ['priority'],
       _count: true,
-    });
+    })) as PriorityGroup[];
 
-    priorities.forEach((p) => {
+    priorities.forEach((p: PriorityGroup) => {
       if (p.priority in priorityCounts) {
         priorityCounts[p.priority as keyof typeof priorityCounts] = p._count;
       }
@@ -295,7 +305,12 @@ export default async function ReportsPage() {
 
           <div
             className="card"
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '24px',
+            }}
           >
             <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               <ShieldAlert size={36} style={{ color: 'var(--text-muted)' }} />
