@@ -3,18 +3,34 @@ import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+type ExportEmail = {
+  id: string;
+  subject: string;
+  senderName: string;
+  senderEmail: string;
+  company: string | null;
+  status: string;
+  priority: string;
+  dueDate: Date | null;
+  receivedAt: Date;
+  body: string;
+  assignedContactText: string | null;
+};
+
 function escapeCsv(value: unknown) {
   if (value === null || value === undefined) return '';
   const str = String(value);
+
   if (str.includes('"') || str.includes(',') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`;
   }
+
   return str;
 }
 
 export async function GET() {
   try {
-    const emails = await db.email.findMany({
+    const emails: ExportEmail[] = await db.email.findMany({
       orderBy: { receivedAt: 'desc' },
       select: {
         id: true,
@@ -45,7 +61,7 @@ export async function GET() {
       'Body',
     ];
 
-    const rows = emails.map((email) => [
+    const rows = emails.map((email: ExportEmail) => [
       email.id,
       email.subject,
       email.senderName,
@@ -54,8 +70,8 @@ export async function GET() {
       email.status,
       email.priority,
       email.assignedContactText ?? '',
-      email.dueDate ? new Date(email.dueDate).toISOString() : '',
-      new Date(email.receivedAt).toISOString(),
+      email.dueDate ? email.dueDate.toISOString() : '',
+      email.receivedAt.toISOString(),
       email.body,
     ]);
 
@@ -71,11 +87,12 @@ export async function GET() {
         'Cache-Control': 'no-store',
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error exporting emails data as CSV:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to export CSV' },
-      { status: 500 }
-    );
+
+    const message =
+      error instanceof Error ? error.message : 'Failed to export CSV';
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
