@@ -103,13 +103,13 @@ model Action {
 }
 
 model Reply {
-  id          String   @id @default(uuid())
-  emailId     String
-  email       Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
-  sender      String
-  body        String   @db.Text
-  receivedAt  DateTime @default(now())
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  emailId    String
+  email      Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  sender     String
+  body       String   @db.Text
+  receivedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   @@index([emailId])
 }

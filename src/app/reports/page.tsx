@@ -5,16 +5,6 @@ import { Download, BarChart3, PieChart, Info, ShieldAlert } from 'lucide-react';
 
 export const revalidate = 0;
 
-type StatusGroup = {
-  status: string;
-  _count: number;
-};
-
-type PriorityGroup = {
-  priority: string;
-  _count: number;
-};
-
 export default async function ReportsPage() {
   let totalEmails = 0;
   const statusCounts = {
@@ -36,27 +26,27 @@ export default async function ReportsPage() {
     const now = new Date();
     totalEmails = await db.email.count();
 
-    const statuses = (await db.email.groupBy({
+    const statuses = await db.email.groupBy({
       by: ['status'],
       _count: true,
-    })) as StatusGroup[];
+    });
 
-    statuses.forEach((s: StatusGroup) => {
+    for (const s of statuses as Array<{ status: string; _count: number }>) {
       if (s.status in statusCounts) {
         statusCounts[s.status as keyof typeof statusCounts] = s._count;
       }
-    });
+    }
 
-    const priorities = (await db.email.groupBy({
+    const priorities = await db.email.groupBy({
       by: ['priority'],
       _count: true,
-    })) as PriorityGroup[];
+    });
 
-    priorities.forEach((p: PriorityGroup) => {
+    for (const p of priorities as Array<{ priority: string; _count: number }>) {
       if (p.priority in priorityCounts) {
         priorityCounts[p.priority as keyof typeof priorityCounts] = p._count;
       }
-    });
+    }
 
     totalOverdue = await db.email.count({
       where: {
