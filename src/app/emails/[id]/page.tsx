@@ -2,7 +2,12 @@ import React from 'react';
 import Link from 'next/link';
 import { db } from '@/lib/db';
 import EmailTable from '@/components/EmailTable';
-import { EmailStatus, Priority } from '@prisma/client';
+import {
+  EMAIL_STATUS,
+  PRIORITY,
+  type EmailStatus,
+  type Priority,
+} from '@/lib/constants';
 import { PlusCircle, Filter, RotateCcw, Search } from 'lucide-react';
 import styles from '@/styles/components.module.css';
 
@@ -131,7 +136,7 @@ export default async function EmailsPage({
                 <label>Status</label>
                 <select name="status" defaultValue={status}>
                   <option value="">All Statuses</option>
-                  {Object.values(EmailStatus).map((s) => (
+                  {Object.values(EMAIL_STATUS).map((s) => (
                     <option key={s} value={s}>
                       {s.replace('_', ' ')}
                     </option>
@@ -143,7 +148,7 @@ export default async function EmailsPage({
                 <label>Priority</label>
                 <select name="priority" defaultValue={priority}>
                   <option value="">All Priorities</option>
-                  {Object.values(Priority).map((p) => (
+                  {Object.values(PRIORITY).map((p) => (
                     <option key={p} value={p}>
                       {p}
                     </option>
