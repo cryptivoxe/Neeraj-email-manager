@@ -1,12 +1,18 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { EmailStatus, Priority, ActionType, Role } from '@prisma/client';
+import {
+  ACTION_TYPE,
+  EMAIL_STATUS,
+  type ActionType,
+  type EmailStatus,
+  type Priority,
+} from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 
 async function getOrCreateManager() {
   let manager = await db.user.findFirst({
-    where: { role: Role.MANAGER },
+    where: { role: 'MANAGER' },
   });
 
   if (!manager) {
@@ -14,7 +20,7 @@ async function getOrCreateManager() {
       data: {
         email: 'neeraj.kumar@company.com',
         name: 'Neeraj Kumar',
-        role: Role.MANAGER,
+        role: 'MANAGER',
       },
     });
   }
@@ -70,9 +76,13 @@ export async function createEmail(formData: {
     revalidatePath('/emails/new');
 
     return { success: true, emailId: email.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in createEmail server action:', error);
-    return { success: false, error: error.message || 'Failed to create email' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create email',
+    };
   }
 }
 
@@ -93,17 +103,19 @@ export async function addEmailAction(
       },
     });
 
-    let detailsStr = `Action '${type}' recorded: "${description.substring(0, 50)}${description.length > 50 ? '...' : ''}"`;
+    let detailsStr = `Action '${type}' recorded: "${description.substring(0, 50)}${
+      description.length > 50 ? '...' : ''
+    }"`;
     let statusToUpdate: EmailStatus | null = null;
 
-    if (type === ActionType.CLOSE) {
-      statusToUpdate = EmailStatus.CLOSED;
+    if (type === ACTION_TYPE.CLOSE) {
+      statusToUpdate = EMAIL_STATUS.CLOSED;
       detailsStr = 'Action CLOSE recorded. Status updated to CLOSED.';
-    } else if (type === ActionType.FORWARD) {
-      statusToUpdate = EmailStatus.FORWARDED;
+    } else if (type === ACTION_TYPE.FORWARD) {
+      statusToUpdate = EMAIL_STATUS.FORWARDED;
       detailsStr = `Action FORWARD recorded. Status updated to FORWARDED. Description: "${description.substring(0, 50)}"`;
-    } else if (type === ActionType.REPLY) {
-      statusToUpdate = EmailStatus.WAITING_REPLY;
+    } else if (type === ACTION_TYPE.REPLY) {
+      statusToUpdate = EMAIL_STATUS.WAITING_REPLY;
       detailsStr = `Action REPLY sent. Status updated to WAITING_REPLY. Description: "${description.substring(0, 50)}"`;
     }
 
@@ -128,9 +140,13 @@ export async function addEmailAction(
     revalidatePath(`/emails/${emailId}`);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in addEmailAction:', error);
-    return { success: false, error: error.message || 'Failed to log action' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to log action',
+    };
   }
 }
 
@@ -153,7 +169,7 @@ export async function addExternalReply(
 
     await db.email.update({
       where: { id: emailId },
-      data: { status: EmailStatus.NEEDS_ACTION },
+      data: { status: EMAIL_STATUS.NEEDS_ACTION },
     });
 
     await db.auditLog.create({
@@ -170,9 +186,13 @@ export async function addExternalReply(
     revalidatePath(`/emails/${emailId}`);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in addExternalReply:', error);
-    return { success: false, error: error.message || 'Failed to record reply' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to record reply',
+    };
   }
 }
 
@@ -189,8 +209,8 @@ export async function updateEmailAssignee(
         : null;
 
     const newStatus = cleanAssignedContact
-      ? EmailStatus.FORWARDED
-      : EmailStatus.NEEDS_ACTION;
+      ? EMAIL_STATUS.FORWARDED
+      : EMAIL_STATUS.NEEDS_ACTION;
 
     await db.email.update({
       where: { id: emailId },
@@ -203,7 +223,7 @@ export async function updateEmailAssignee(
     await db.action.create({
       data: {
         emailId,
-        type: ActionType.ASSIGN,
+        type: ACTION_TYPE.ASSIGN,
         description: cleanAssignedContact
           ? `Assigned email to ${cleanAssignedContact}.`
           : 'Assignment removed from email.',
@@ -217,7 +237,7 @@ export async function updateEmailAssignee(
         actionType: 'REASSIGNMENT',
         details: cleanAssignedContact
           ? `Assigned to ${cleanAssignedContact}. Status changed to FORWARDED.`
-          : `Assignment removed. Status reverted to NEEDS_ACTION.`,
+          : 'Assignment removed. Status reverted to NEEDS_ACTION.',
         performedById: manager.id,
       },
     });
@@ -227,9 +247,13 @@ export async function updateEmailAssignee(
     revalidatePath(`/emails/${emailId}`);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in updateEmailAssignee:', error);
-    return { success: false, error: error.message || 'Failed to update assignee' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update assignee',
+    };
   }
 }
 
@@ -265,9 +289,13 @@ export async function updateEmailStatus(emailId: string, status: EmailStatus) {
     revalidatePath(`/emails/${emailId}`);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in updateEmailStatus:', error);
-    return { success: false, error: error.message || 'Failed to update status' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update status',
+    };
   }
 }
 
@@ -282,9 +310,13 @@ export async function deleteEmail(emailId: string) {
     revalidatePath(`/emails/${emailId}`);
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting email:', error);
-    return { success: false, error: error.message || 'Failed to delete email' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete email',
+    };
   }
 }
 
@@ -309,11 +341,15 @@ export async function deleteSelectedEmails(emailIds: string[]) {
       success: true,
       deletedCount: result.count,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting selected emails:', error);
+
     return {
       success: false,
-      error: error.message || 'Failed to delete selected emails',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete selected emails',
     };
   }
 }

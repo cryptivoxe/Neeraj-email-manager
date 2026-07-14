@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db';
-import { ContactRole } from '@prisma/client';
+import { type ContactRole } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -30,9 +30,14 @@ export async function createContact(formData: {
     revalidatePath('/contacts');
     revalidatePath('/emails');
     revalidatePath('/emails/new');
+
     return { success: true, contactId: contact.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in createContact server action:', error);
-    return { success: false, error: error.message || 'Failed to create contact.' };
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create contact.',
+    };
   }
 }
