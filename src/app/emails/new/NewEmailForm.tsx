@@ -38,8 +38,8 @@ export default function NewEmailForm() {
     e.preventDefault();
     setError('');
 
-    if (!subject.trim() || !senderName.trim() || !senderEmail.trim() || !body.trim()) {
-      setError('Please fill in all required fields (Subject, Department, Sender Email, and Body).');
+    if (!subject.trim() || !senderName.trim() || !body.trim()) {
+      setError('Please fill in all required fields (Subject, Department, and Body).');
       return;
     }
 
@@ -48,7 +48,7 @@ export default function NewEmailForm() {
     const result = await createEmail({
       subject: subject.trim(),
       senderName: senderName.trim(),
-      senderEmail: senderEmail.trim(),
+      senderEmail: senderEmail.trim() || undefined,
       company: company.trim() || undefined,
       body: body.trim(),
       priority,
@@ -126,13 +126,12 @@ export default function NewEmailForm() {
             </div>
 
             <div className="form-group">
-              <label>Sender Email *</label>
+              <label>Sender Email</label>
               <input
                 type="email"
                 value={senderEmail}
                 onChange={(e) => setSenderEmail(e.target.value)}
                 placeholder="e.g. billing@company.com"
-                required
               />
             </div>
           </div>

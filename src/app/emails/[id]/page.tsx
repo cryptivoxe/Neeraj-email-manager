@@ -64,11 +64,13 @@ export default async function EmailDetailPage({ params }: PageProps) {
   async function saveDetails(formData: FormData) {
     'use server';
 
+    const senderEmailRaw = String(formData.get('senderEmail') || '').trim();
+
     const result = await updateEmailDetails({
       emailId: id,
       subject: String(formData.get('subject') || ''),
       senderName: String(formData.get('senderName') || ''),
-      senderEmail: String(formData.get('senderEmail') || ''),
+      senderEmail: senderEmailRaw || undefined,
       company: String(formData.get('company') || ''),
       body: String(formData.get('body') || ''),
       priority: String(formData.get('priority') || PRIORITY.MEDIUM) as (typeof PRIORITY)[keyof typeof PRIORITY],
@@ -173,7 +175,12 @@ export default async function EmailDetailPage({ params }: PageProps) {
                 </div>
                 <div className="form-group">
                   <label>Sender Email</label>
-                  <input name="senderEmail" type="email" defaultValue={email.senderEmail} required />
+                  <input
+                    name="senderEmail"
+                    type="email"
+                    defaultValue={email.senderEmail ?? ''}
+                    placeholder="e.g. billing@company.com"
+                  />
                 </div>
               </div>
 
@@ -261,7 +268,7 @@ export default async function EmailDetailPage({ params }: PageProps) {
               <div><span>Status</span><strong>{email.status.replaceAll('_', ' ')}</strong></div>
               <div><span>Priority</span><strong>{email.priority}</strong></div>
               <div><span>Sender</span><strong>{email.senderName}</strong></div>
-              <div><span>Email</span><strong>{email.senderEmail}</strong></div>
+              <div><span>Email</span><strong>{email.senderEmail || 'Not provided'}</strong></div>
               <div><span>Assigned</span><strong>{email.assignedContactText || 'Unassigned'}</strong></div>
               <div>
                 <span>Closed At</span>

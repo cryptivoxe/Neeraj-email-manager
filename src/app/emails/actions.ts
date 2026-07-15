@@ -35,7 +35,7 @@ function getClosedAtForStatus(status: EmailStatus): Date | null {
 export async function createEmail(formData: {
   subject: string;
   senderName: string;
-  senderEmail: string;
+  senderEmail?: string;
   company?: string;
   body: string;
   priority: Priority;
@@ -45,6 +45,10 @@ export async function createEmail(formData: {
   try {
     const manager = await getOrCreateManager();
 
+    const cleanSenderEmail = formData.senderEmail?.trim() || null;
+    const cleanCompany = formData.company?.trim() || null;
+    const cleanAssignedContact = formData.assignedContactText?.trim() || null;
+
     const bodySnippet =
       formData.body.length > 150
         ? formData.body.substring(0, 150) + '...'
@@ -52,16 +56,16 @@ export async function createEmail(formData: {
 
     const email = await db.email.create({
       data: {
-        subject: formData.subject,
-        senderName: formData.senderName,
-        senderEmail: formData.senderEmail,
-        company: formData.company || null,
+        subject: formData.subject.trim(),
+        senderName: formData.senderName.trim(),
+        senderEmail: cleanSenderEmail,
+        company: cleanCompany,
         bodySnippet,
-        body: formData.body,
+        body: formData.body.trim(),
         priority: formData.priority,
         status: formData.status,
         closedAt: getClosedAtForStatus(formData.status),
-        assignedContactText: formData.assignedContactText?.trim() || null,
+        assignedContactText: cleanAssignedContact,
       },
     });
 
@@ -93,7 +97,7 @@ export async function updateEmailDetails(formData: {
   emailId: string;
   subject: string;
   senderName: string;
-  senderEmail: string;
+  senderEmail?: string;
   company?: string;
   body: string;
   priority: Priority;
@@ -122,22 +126,22 @@ export async function updateEmailDetails(formData: {
       throw new Error('Email not found');
     }
 
+    const cleanSenderEmail = formData.senderEmail?.trim() || null;
     const cleanAssignedContact = formData.assignedContactText?.trim() || null;
     const cleanCompany = formData.company?.trim() || null;
 
+    const bodyText = formData.body.trim();
     const bodySnippet =
-      formData.body.length > 150
-        ? formData.body.substring(0, 150) + '...'
-        : formData.body;
+      bodyText.length > 150 ? bodyText.substring(0, 150) + '...' : bodyText;
 
     await db.email.update({
       where: { id: formData.emailId },
       data: {
-        subject: formData.subject,
-        senderName: formData.senderName,
-        senderEmail: formData.senderEmail,
+        subject: formData.subject.trim(),
+        senderName: formData.senderName.trim(),
+        senderEmail: cleanSenderEmail,
         company: cleanCompany,
-        body: formData.body,
+        body: bodyText,
         bodySnippet,
         priority: formData.priority,
         status: formData.status,

@@ -66,7 +66,7 @@ model Email {
   id                  String           @id @default(uuid())
   subject             String
   senderName          String
-  senderEmail         String
+  senderEmail         String?
   company             String?
   bodySnippet         String
   body                String           @db.Text

@@ -38,7 +38,7 @@ export default async function EmailsPage({
     id: string;
     subject: string;
     senderName: string;
-    senderEmail: string;
+    senderEmail: string | null;
     company: string | null;
     receivedAt: Date;
     closedAt: Date | null;

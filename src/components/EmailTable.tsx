@@ -13,7 +13,7 @@ interface Email {
   id: string;
   subject: string;
   senderName: string;
-  senderEmail: string;
+  senderEmail: string | null;
   company: string | null;
   receivedAt: Date;
   closedAt: Date | null;
@@ -192,7 +192,7 @@ export default function EmailTable({ emails }: EmailTableProps) {
                     <div style={{ fontSize: '13px' }}>{email.senderName}</div>
                     <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
                       {email.company ? `${email.company} • ` : ''}
-                      {email.senderEmail}
+                      {email.senderEmail ?? 'No email provided'}
                     </div>
                   </td>
 

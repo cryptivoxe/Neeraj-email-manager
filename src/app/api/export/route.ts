@@ -7,7 +7,7 @@ type ExportEmail = {
   id: string;
   subject: string;
   senderName: string;
-  senderEmail: string;
+  senderEmail: string | null;
   company: string | null;
   status: string;
   priority: string;
@@ -65,7 +65,7 @@ export async function GET() {
       email.id,
       email.subject,
       email.senderName,
-      email.senderEmail,
+      email.senderEmail ?? '',
       email.company ?? '',
       email.status,
       email.priority,
