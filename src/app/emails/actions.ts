@@ -28,6 +28,10 @@ async function getOrCreateManager() {
   return manager;
 }
 
+function getClosedAtForStatus(status: EmailStatus): Date | null {
+  return status === EMAIL_STATUS.CLOSED ? new Date() : null;
+}
+
 export async function createEmail(formData: {
   subject: string;
   senderName: string;
@@ -36,7 +40,6 @@ export async function createEmail(formData: {
   body: string;
   priority: Priority;
   status: EmailStatus;
-  dueDate?: string;
   assignedContactText?: string;
 }) {
   try {
@@ -57,7 +60,7 @@ export async function createEmail(formData: {
         body: formData.body,
         priority: formData.priority,
         status: formData.status,
-        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        closedAt: getClosedAtForStatus(formData.status),
         assignedContactText: formData.assignedContactText?.trim() || null,
       },
     });
@@ -95,7 +98,6 @@ export async function updateEmailDetails(formData: {
   body: string;
   priority: Priority;
   status: EmailStatus;
-  dueDate?: string;
   assignedContactText?: string;
 }) {
   try {
@@ -111,7 +113,7 @@ export async function updateEmailDetails(formData: {
         body: true,
         priority: true,
         status: true,
-        dueDate: true,
+        closedAt: true,
         assignedContactText: true,
       },
     });
@@ -139,7 +141,7 @@ export async function updateEmailDetails(formData: {
         bodySnippet,
         priority: formData.priority,
         status: formData.status,
-        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        closedAt: getClosedAtForStatus(formData.status),
         assignedContactText: cleanAssignedContact,
       },
     });
@@ -204,7 +206,10 @@ export async function addEmailAction(
     if (statusToUpdate) {
       await db.email.update({
         where: { id: emailId },
-        data: { status: statusToUpdate },
+        data: {
+          status: statusToUpdate,
+          closedAt: getClosedAtForStatus(statusToUpdate),
+        },
       });
     }
 
@@ -251,7 +256,10 @@ export async function addExternalReply(
 
     await db.email.update({
       where: { id: emailId },
-      data: { status: EMAIL_STATUS.NEEDS_ACTION },
+      data: {
+        status: EMAIL_STATUS.NEEDS_ACTION,
+        closedAt: null,
+      },
     });
 
     await db.auditLog.create({
@@ -299,6 +307,7 @@ export async function updateEmailAssignee(
       data: {
         assignedContactText: cleanAssignedContact,
         status: newStatus,
+        closedAt: getClosedAtForStatus(newStatus),
       },
     });
 
@@ -354,7 +363,10 @@ export async function updateEmailStatus(emailId: string, status: EmailStatus) {
 
     await db.email.update({
       where: { id: emailId },
-      data: { status },
+      data: {
+        status,
+        closedAt: getClosedAtForStatus(status),
+      },
     });
 
     await db.auditLog.create({

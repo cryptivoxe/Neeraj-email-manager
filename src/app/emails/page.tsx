@@ -1,15 +1,15 @@
-import React from 'react';
-import Link from 'next/link';
-import { db } from '@/lib/db';
-import EmailTable from '@/components/EmailTable';
+import React from "react";
+import Link from "next/link";
+import { db } from "@/lib/db";
+import EmailTable from "@/components/EmailTable";
 import {
   EMAIL_STATUS,
   PRIORITY,
   type EmailStatus,
   type Priority,
-} from '@/lib/constants';
-import { PlusCircle, Filter, RotateCcw, Search } from 'lucide-react';
-import styles from '@/styles/components.module.css';
+} from "@/lib/constants";
+import { PlusCircle, Filter, RotateCcw, Search } from "lucide-react";
+import styles from "@/styles/components.module.css";
 
 export const revalidate = 0;
 
@@ -22,15 +22,17 @@ export default async function EmailsPage({
 }) {
   const params = await searchParams;
 
-  const q = typeof params.q === 'string' ? params.q : '';
-  const status = typeof params.status === 'string' ? params.status : '';
-  const priority = typeof params.priority === 'string' ? params.priority : '';
+  const q = typeof params.q === "string" ? params.q : "";
+  const status = typeof params.status === "string" ? params.status : "";
+  const priority = typeof params.priority === "string" ? params.priority : "";
   const assignedContactText =
-    typeof params.assignedContactText === 'string' ? params.assignedContactText : '';
+    typeof params.assignedContactText === "string"
+      ? params.assignedContactText
+      : "";
   const receivedFrom =
-    typeof params.receivedFrom === 'string' ? params.receivedFrom : '';
+    typeof params.receivedFrom === "string" ? params.receivedFrom : "";
   const receivedTo =
-    typeof params.receivedTo === 'string' ? params.receivedTo : '';
+    typeof params.receivedTo === "string" ? params.receivedTo : "";
 
   let emails: Array<{
     id: string;
@@ -39,7 +41,7 @@ export default async function EmailsPage({
     senderEmail: string;
     company: string | null;
     receivedAt: Date;
-    dueDate: Date | null;
+    closedAt: Date | null;
     priority: Priority;
     status: EmailStatus;
     assignedContactText: string | null;
@@ -53,7 +55,7 @@ export default async function EmailsPage({
       priority?: Priority;
       assignedContactText?: {
         contains: string;
-        mode: 'insensitive';
+        mode: "insensitive";
       };
       receivedAt?: {
         gte?: Date;
@@ -63,12 +65,12 @@ export default async function EmailsPage({
 
     if (q) {
       where.OR = [
-        { subject: { contains: q, mode: 'insensitive' } },
-        { senderName: { contains: q, mode: 'insensitive' } },
-        { senderEmail: { contains: q, mode: 'insensitive' } },
-        { company: { contains: q, mode: 'insensitive' } },
-        { body: { contains: q, mode: 'insensitive' } },
-        { assignedContactText: { contains: q, mode: 'insensitive' } },
+        { subject: { contains: q, mode: "insensitive" } },
+        { senderName: { contains: q, mode: "insensitive" } },
+        { senderEmail: { contains: q, mode: "insensitive" } },
+        { company: { contains: q, mode: "insensitive" } },
+        { body: { contains: q, mode: "insensitive" } },
+        { assignedContactText: { contains: q, mode: "insensitive" } },
       ];
     }
 
@@ -83,7 +85,7 @@ export default async function EmailsPage({
     if (assignedContactText) {
       where.assignedContactText = {
         contains: assignedContactText,
-        mode: 'insensitive',
+        mode: "insensitive",
       };
     }
 
@@ -101,7 +103,7 @@ export default async function EmailsPage({
 
     emails = await db.email.findMany({
       where,
-      orderBy: [{ receivedAt: 'desc' }],
+      orderBy: [{ receivedAt: "desc" }],
       select: {
         id: true,
         subject: true,
@@ -109,19 +111,24 @@ export default async function EmailsPage({
         senderEmail: true,
         company: true,
         receivedAt: true,
-        dueDate: true,
+        closedAt: true,
         priority: true,
         status: true,
         assignedContactText: true,
       },
     });
   } catch (error) {
-    console.error('Error fetching emails list:', error);
+    console.error("Error fetching emails list:", error);
     dbError = true;
   }
 
   const hasActiveFilters =
-    q || status || priority || assignedContactText || receivedFrom || receivedTo;
+    q ||
+    status ||
+    priority ||
+    assignedContactText ||
+    receivedFrom ||
+    receivedTo;
 
   return (
     <div>
@@ -139,17 +146,22 @@ export default async function EmailsPage({
       </div>
 
       {dbError ? (
-        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: 'var(--status-needs-action)' }}>
-            Could not load email records. Please ensure your database is running and migrated.
+        <div className="card" style={{ textAlign: "center", padding: "40px" }}>
+          <p style={{ color: "var(--status-needs-action)" }}>
+            Could not load email records. Please ensure your database is running
+            and migrated.
           </p>
         </div>
       ) : (
         <>
-          <form method="GET" action="/emails" className={styles.filterContainer}>
+          <form
+            method="GET"
+            action="/emails"
+            className={styles.filterContainer}
+          >
             <div className={styles.filterHeader}>
               <div className={styles.filterTitle}>
-                <Filter size={16} style={{ color: 'var(--accent)' }} />
+                <Filter size={16} style={{ color: "var(--accent)" }} />
                 <span>Search & Filter</span>
               </div>
 
@@ -158,11 +170,11 @@ export default async function EmailsPage({
                   href="/emails"
                   className="btn btn-secondary"
                   style={{
-                    padding: '4px 8px',
-                    fontSize: '11px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
+                    padding: "4px 8px",
+                    fontSize: "11px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
                   }}
                 >
                   <RotateCcw size={12} />
@@ -179,7 +191,7 @@ export default async function EmailsPage({
                   name="q"
                   placeholder="Subject, department, sender email, assigned contact..."
                   defaultValue={q}
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                 />
               </div>
 
@@ -189,7 +201,7 @@ export default async function EmailsPage({
                   <option value="">All Statuses</option>
                   {Object.values(EMAIL_STATUS).map((s) => (
                     <option key={s} value={s}>
-                      {s.replace('_', ' ')}
+                      {s.replace("_", " ")}
                     </option>
                   ))}
                 </select>
@@ -236,8 +248,18 @@ export default async function EmailsPage({
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-              <button type="submit" className="btn btn-primary" style={{ minWidth: '100px' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: "4px",
+              }}
+            >
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ minWidth: "100px" }}
+              >
                 <Search size={14} />
                 <span>Apply Filters</span>
               </button>

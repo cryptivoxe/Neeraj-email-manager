@@ -30,7 +30,6 @@ export default function NewEmailForm() {
   const [body, setBody] = useState('');
   const [priority, setPriority] = useState<Priority>(PRIORITY.MEDIUM);
   const [status, setStatus] = useState<EmailStatus>(EMAIL_STATUS.NEEDS_ACTION);
-  const [dueDate, setDueDate] = useState('');
   const [assignedContactText, setAssignedContactText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +53,6 @@ export default function NewEmailForm() {
       body: body.trim(),
       priority,
       status,
-      dueDate: dueDate || undefined,
       assignedContactText: assignedContactText.trim() || undefined,
     });
 
@@ -151,11 +149,12 @@ export default function NewEmailForm() {
             </div>
 
             <div className="form-group">
-              <label>Due Date</label>
+              <label>Assigned Contact</label>
               <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
+                type="text"
+                value={assignedContactText}
+                onChange={(e) => setAssignedContactText(e.target.value)}
+                placeholder="e.g. Riya Sharma / Procurement"
               />
             </div>
           </div>
@@ -188,16 +187,6 @@ export default function NewEmailForm() {
                 ))}
               </select>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label>Assigned Contact</label>
-            <input
-              type="text"
-              value={assignedContactText}
-              onChange={(e) => setAssignedContactText(e.target.value)}
-              placeholder="e.g. Riya Sharma / Procurement"
-            />
           </div>
 
           <div className="form-group">

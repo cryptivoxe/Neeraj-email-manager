@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Priority, EmailStatus } from '@/lib/constants';
 import StatusBadge from './StatusBadge';
-import { formatDate, isOverdue } from '@/lib/utils';
-import { AlertCircle, User, Trash2, SquarePen } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
+import { User, Trash2, SquarePen } from 'lucide-react';
 import { deleteSelectedEmails } from '@/app/emails/actions';
 
 interface Email {
@@ -16,7 +16,7 @@ interface Email {
   senderEmail: string;
   company: string | null;
   receivedAt: Date;
-  dueDate: Date | null;
+  closedAt: Date | null;
   priority: Priority;
   status: EmailStatus;
   assignedContactText: string | null;
@@ -152,14 +152,12 @@ export default function EmailTable({ emails }: EmailTableProps) {
 
           <tbody>
             {emails.map((email) => {
-              const overdue = isOverdue(email.dueDate, email.status);
               const isSelected = selectedIds.includes(email.id);
 
               return (
                 <tr
                   key={email.id}
                   style={{
-                    ...(overdue ? { borderLeft: '3px solid var(--status-needs-action)' } : {}),
                     ...(isSelected ? { backgroundColor: 'rgba(99, 102, 241, 0.08)' } : {}),
                   }}
                 >
@@ -178,38 +176,16 @@ export default function EmailTable({ emails }: EmailTableProps) {
                   </td>
 
                   <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <Link
-                        href={`/emails/${email.id}`}
-                        style={{
-                          fontWeight: 600,
-                          color: 'var(--text-primary)',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        {email.subject}
-                      </Link>
-
-                      {overdue && (
-                        <div>
-                          <span
-                            style={{
-                              fontSize: '9px',
-                              fontWeight: 700,
-                              padding: '1px 5px',
-                              borderRadius: '3px',
-                              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                              color: 'var(--status-needs-action)',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '2px',
-                            }}
-                          >
-                            <AlertCircle size={10} /> OVERDUE
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    <Link
+                      href={`/emails/${email.id}`}
+                      style={{
+                        fontWeight: 600,
+                        color: 'var(--text-primary)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {email.subject}
+                    </Link>
                   </td>
 
                   <td>
@@ -222,16 +198,14 @@ export default function EmailTable({ emails }: EmailTableProps) {
 
                   <td>
                     <div style={{ fontSize: '13px' }}>{formatDate(email.receivedAt)}</div>
-                    {email.dueDate && (
+                    {email.closedAt && (
                       <div
                         style={{
                           fontSize: '11px',
-                          color: overdue
-                            ? 'var(--status-needs-action)'
-                            : 'var(--text-secondary)',
+                          color: 'var(--status-closed)',
                         }}
                       >
-                        Due: {formatDate(email.dueDate)}
+                        Closed: {formatDate(email.closedAt)}
                       </div>
                     )}
                   </td>

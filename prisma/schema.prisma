@@ -73,7 +73,7 @@ model Email {
   receivedAt          DateTime         @default(now())
   priority            Priority         @default(MEDIUM)
   status              EmailStatus      @default(NEEDS_ACTION)
-  dueDate             DateTime?
+  closedAt            DateTime?
   assignedContactText String?
   actions             Action[]
   replies             Reply[]
@@ -85,7 +85,7 @@ model Email {
   @@index([status])
   @@index([priority])
   @@index([receivedAt])
-  @@index([dueDate])
+  @@index([closedAt])
 }
 
 model Action {

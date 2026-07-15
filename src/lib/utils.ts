@@ -43,28 +43,6 @@ export function formatDateTime(date: Date | string | null): string {
 }
 
 /**
- * Determines whether an email is overdue based on its due date and current status.
- */
-export function isOverdue(
-  dueDate: Date | string | null,
-  status: EmailStatus
-): boolean {
-  if (!dueDate) return false;
-
-  if (
-    status === EMAIL_STATUS.CLOSED ||
-    status === EMAIL_STATUS.ARCHIVED
-  ) {
-    return false;
-  }
-
-  const due = typeof dueDate === 'string' ? new Date(dueDate) : dueDate;
-  if (isNaN(due.getTime())) return false;
-
-  return due.getTime() < Date.now();
-}
-
-/**
  * Sanitizes and generates basic CSV content for emails list.
  */
 export function convertToCSV(data: any[]): string {
@@ -74,10 +52,10 @@ export function convertToCSV(data: any[]): string {
     'Sender Email',
     'Company',
     'Received At',
+    'Closed At',
     'Priority',
     'Status',
-    'Due Date',
-    'Assignee',
+    'Assigned Contact',
   ];
 
   const rows = data.map((item) => {
@@ -87,10 +65,10 @@ export function convertToCSV(data: any[]): string {
       item.senderEmail ?? '',
       item.company ?? '',
       item.receivedAt ? new Date(item.receivedAt).toISOString() : '',
+      item.closedAt ? new Date(item.closedAt).toISOString() : '',
       item.priority ?? '',
       item.status ?? '',
-      item.dueDate ? new Date(item.dueDate).toISOString() : '',
-      item.assignee?.name ?? '',
+      item.assignedContactText ?? '',
     ]
       .map((val) => {
         const escaped = String(val).replace(/"/g, '""');

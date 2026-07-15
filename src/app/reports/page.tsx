@@ -1,7 +1,6 @@
 import React from 'react';
 import { db } from '@/lib/db';
-import { EMAIL_STATUS } from '@/lib/constants';
-import { Download, BarChart3, PieChart, Info, ShieldAlert } from 'lucide-react';
+import { Download, BarChart3, PieChart, Info, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 export const revalidate = 0;
 
@@ -19,39 +18,43 @@ export default async function ReportsPage() {
     MEDIUM: 0,
     HIGH: 0,
   };
-  let totalOverdue = 0;
+  let totalClosed = 0;
   let dbError = false;
 
   try {
-    const now = new Date();
     totalEmails = await db.email.count();
 
     const statuses = await db.email.groupBy({
       by: ['status'],
-      _count: true,
+      _count: {
+        status: true,
+      },
     });
 
-    for (const s of statuses as Array<{ status: string; _count: number }>) {
+    for (const s of statuses) {
       if (s.status in statusCounts) {
-        statusCounts[s.status as keyof typeof statusCounts] = s._count;
+        statusCounts[s.status as keyof typeof statusCounts] = s._count.status;
       }
     }
 
     const priorities = await db.email.groupBy({
       by: ['priority'],
-      _count: true,
+      _count: {
+        priority: true,
+      },
     });
 
-    for (const p of priorities as Array<{ priority: string; _count: number }>) {
+    for (const p of priorities) {
       if (p.priority in priorityCounts) {
-        priorityCounts[p.priority as keyof typeof priorityCounts] = p._count;
+        priorityCounts[p.priority as keyof typeof priorityCounts] = p._count.priority;
       }
     }
 
-    totalOverdue = await db.email.count({
+    totalClosed = await db.email.count({
       where: {
-        dueDate: { lt: now },
-        status: { notIn: [EMAIL_STATUS.CLOSED, EMAIL_STATUS.ARCHIVED] },
+        closedAt: {
+          not: null,
+        },
       },
     });
   } catch (error) {
@@ -126,7 +129,7 @@ export default async function ReportsPage() {
               </p>
             </div>
 
-            <div className="card" style={{ borderLeft: '4px solid var(--status-needs-action)' }}>
+            <div className="card" style={{ borderLeft: '4px solid var(--status-closed)' }}>
               <span
                 style={{
                   fontSize: '11px',
@@ -135,20 +138,20 @@ export default async function ReportsPage() {
                   textTransform: 'uppercase',
                 }}
               >
-                Overdue Actions
+                Closed Emails
               </span>
               <h2
                 style={{
                   fontSize: '32px',
                   fontWeight: 700,
                   marginTop: '8px',
-                  color: 'var(--status-needs-action)',
+                  color: 'var(--status-closed)',
                 }}
               >
-                {totalOverdue}
+                {totalClosed}
               </h2>
               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Items past target completion date
+                Records completed and timestamped
               </p>
             </div>
 

@@ -39,15 +39,6 @@ type AuditLogItem = {
   createdAt: Date;
 };
 
-function formatDateInput(date: Date | null) {
-  if (!date) return '';
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = `${d.getMonth() + 1}`.padStart(2, '0');
-  const day = `${d.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 export default async function EmailDetailPage({ params }: PageProps) {
   const { id } = await params;
 
@@ -82,7 +73,6 @@ export default async function EmailDetailPage({ params }: PageProps) {
       body: String(formData.get('body') || ''),
       priority: String(formData.get('priority') || PRIORITY.MEDIUM) as (typeof PRIORITY)[keyof typeof PRIORITY],
       status: String(formData.get('status') || EMAIL_STATUS.NEEDS_ACTION) as (typeof EMAIL_STATUS)[keyof typeof EMAIL_STATUS],
-      dueDate: String(formData.get('dueDate') || ''),
       assignedContactText: String(formData.get('assignedContactText') || ''),
     });
 
@@ -211,25 +201,13 @@ export default async function EmailDetailPage({ params }: PageProps) {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Assigned Contact</label>
-                  <input
-                    name="assignedContactText"
-                    defaultValue={email.assignedContactText ?? ''}
-                    placeholder="e.g. Procurement Team"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Due Date</label>
-                  <input
-                    type="date"
-                    name="dueDate"
-                    defaultValue={formatDateInput(email.dueDate)}
-                    className="date-input"
-                  />
-                </div>
+              <div className="form-group">
+                <label>Assigned Contact</label>
+                <input
+                  name="assignedContactText"
+                  defaultValue={email.assignedContactText ?? ''}
+                  placeholder="e.g. Procurement Team"
+                />
               </div>
 
               <div className="form-group">
@@ -273,6 +251,27 @@ export default async function EmailDetailPage({ params }: PageProps) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="card">
+            <div className="section-header">
+              <h3>Current Snapshot</h3>
+            </div>
+
+            <div className="summary-list">
+              <div><span>ID</span><strong>{email.id}</strong></div>
+              <div><span>Status</span><strong>{email.status.replaceAll('_', ' ')}</strong></div>
+              <div><span>Priority</span><strong>{email.priority}</strong></div>
+              <div><span>Sender</span><strong>{email.senderName}</strong></div>
+              <div><span>Email</span><strong>{email.senderEmail}</strong></div>
+              <div><span>Assigned</span><strong>{email.assignedContactText || 'Unassigned'}</strong></div>
+              <div>
+                <span>Closed At</span>
+                <strong>
+                  {email.closedAt ? new Date(email.closedAt).toLocaleString() : 'Not closed'}
+                </strong>
+              </div>
+            </div>
+          </div>
+
           <div className="card">
             <div className="section-header">
               <h3>Actions</h3>

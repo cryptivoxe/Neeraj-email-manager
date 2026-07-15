@@ -11,7 +11,7 @@ type ExportEmail = {
   company: string | null;
   status: string;
   priority: string;
-  dueDate: Date | null;
+  closedAt: Date | null;
   receivedAt: Date;
   body: string;
   assignedContactText: string | null;
@@ -40,7 +40,7 @@ export async function GET() {
         company: true,
         status: true,
         priority: true,
-        dueDate: true,
+        closedAt: true,
         receivedAt: true,
         body: true,
         assignedContactText: true,
@@ -56,7 +56,7 @@ export async function GET() {
       'Status',
       'Priority',
       'Assigned Contact',
-      'Due Date',
+      'Closed At',
       'Received At',
       'Body',
     ];
@@ -70,7 +70,7 @@ export async function GET() {
       email.status,
       email.priority,
       email.assignedContactText ?? '',
-      email.dueDate ? email.dueDate.toISOString() : '',
+      email.closedAt ? email.closedAt.toISOString() : '',
       email.receivedAt.toISOString(),
       email.body,
     ]);
