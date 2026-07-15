@@ -32,11 +32,34 @@ export default async function EmailsPage({
   const receivedTo =
     typeof params.receivedTo === 'string' ? params.receivedTo : '';
 
-  let emails: any[] = [];
+  let emails: Array<{
+    id: string;
+    subject: string;
+    senderName: string;
+    senderEmail: string;
+    company: string | null;
+    receivedAt: Date;
+    dueDate: Date | null;
+    priority: Priority;
+    status: EmailStatus;
+    assignedContactText: string | null;
+  }> = [];
   let dbError = false;
 
   try {
-    const where: any = {};
+    const where: {
+      OR?: Array<Record<string, unknown>>;
+      status?: EmailStatus;
+      priority?: Priority;
+      assignedContactText?: {
+        contains: string;
+        mode: 'insensitive';
+      };
+      receivedAt?: {
+        gte?: Date;
+        lte?: Date;
+      };
+    } = {};
 
     if (q) {
       where.OR = [

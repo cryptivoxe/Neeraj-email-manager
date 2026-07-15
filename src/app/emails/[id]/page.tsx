@@ -1,183 +1,352 @@
 import React from 'react';
 import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
 import { db } from '@/lib/db';
-import EmailTable from '@/components/EmailTable';
+import { EMAIL_STATUS, PRIORITY, ACTION_TYPE } from '@/lib/constants';
 import {
-  EMAIL_STATUS,
-  PRIORITY,
-  type EmailStatus,
-  type Priority,
-} from '@/lib/constants';
-import { PlusCircle, Filter, RotateCcw, Search } from 'lucide-react';
-import styles from '@/styles/components.module.css';
+  updateEmailDetails,
+  updateEmailStatus,
+  addEmailAction,
+  addExternalReply,
+  deleteEmail,
+} from '@/app/emails/actions';
+import { ArrowLeft, Save, Trash2, Send, MessageSquare, CheckCircle2 } from 'lucide-react';
 
 export const revalidate = 0;
 
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
-export default async function EmailsPage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const params = await searchParams;
+type EmailActionItem = {
+  id: string;
+  type: string;
+  description: string;
+  createdAt: Date;
+};
 
-  const q = typeof params.q === 'string' ? params.q : '';
-  const status = typeof params.status === 'string' ? params.status : '';
-  const priority = typeof params.priority === 'string' ? params.priority : '';
-  const assignedContactText =
-    typeof params.assignedContactText === 'string' ? params.assignedContactText : '';
+type EmailReplyItem = {
+  id: string;
+  sender: string;
+  body: string;
+  createdAt: Date;
+};
 
-  let emails: any[] = [];
-  let dbError = false;
+type AuditLogItem = {
+  id: string;
+  actionType: string;
+  details: string;
+  createdAt: Date;
+};
 
-  try {
-    const where: any = {};
+function formatDateInput(date: Date | null) {
+  if (!date) return '';
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = `${d.getMonth() + 1}`.padStart(2, '0');
+  const day = `${d.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
-    if (q) {
-      where.OR = [
-        { subject: { contains: q, mode: 'insensitive' } },
-        { senderName: { contains: q, mode: 'insensitive' } },
-        { senderEmail: { contains: q, mode: 'insensitive' } },
-        { company: { contains: q, mode: 'insensitive' } },
-        { body: { contains: q, mode: 'insensitive' } },
-        { assignedContactText: { contains: q, mode: 'insensitive' } },
-      ];
-    }
+export default async function EmailDetailPage({ params }: PageProps) {
+  const { id } = await params;
 
-    if (status) {
-      where.status = status as EmailStatus;
-    }
+  const email = await db.email.findUnique({
+    where: { id },
+    include: {
+      actions: {
+        orderBy: { createdAt: 'desc' },
+      },
+      replies: {
+        orderBy: { createdAt: 'desc' },
+      },
+      auditLogs: {
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+  });
 
-    if (priority) {
-      where.priority = priority as Priority;
-    }
-
-    if (assignedContactText) {
-      where.assignedContactText = {
-        contains: assignedContactText,
-        mode: 'insensitive',
-      };
-    }
-
-    emails = await db.email.findMany({
-      where,
-      orderBy: [{ receivedAt: 'desc' }],
-    });
-  } catch (error) {
-    console.error('Error fetching emails list:', error);
-    dbError = true;
+  if (!email) {
+    notFound();
   }
 
-  const hasActiveFilters = q || status || priority || assignedContactText;
+  async function saveDetails(formData: FormData) {
+    'use server';
+
+    const result = await updateEmailDetails({
+      emailId: id,
+      subject: String(formData.get('subject') || ''),
+      senderName: String(formData.get('senderName') || ''),
+      senderEmail: String(formData.get('senderEmail') || ''),
+      company: String(formData.get('company') || ''),
+      body: String(formData.get('body') || ''),
+      priority: String(formData.get('priority') || PRIORITY.MEDIUM) as (typeof PRIORITY)[keyof typeof PRIORITY],
+      status: String(formData.get('status') || EMAIL_STATUS.NEEDS_ACTION) as (typeof EMAIL_STATUS)[keyof typeof EMAIL_STATUS],
+      dueDate: String(formData.get('dueDate') || ''),
+      assignedContactText: String(formData.get('assignedContactText') || ''),
+    });
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to update email');
+    }
+  }
+
+  async function saveStatusOnly(formData: FormData) {
+    'use server';
+
+    const status = String(formData.get('status') || '') as (typeof EMAIL_STATUS)[keyof typeof EMAIL_STATUS];
+    const result = await updateEmailStatus(id, status);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to update status');
+    }
+  }
+
+  async function submitAction(formData: FormData) {
+    'use server';
+
+    const type = String(formData.get('type') || '') as (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
+    const description = String(formData.get('description') || '');
+    const result = await addEmailAction(id, type, description);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to add action');
+    }
+  }
+
+  async function submitReply(formData: FormData) {
+    'use server';
+
+    const sender = String(formData.get('sender') || '');
+    const body = String(formData.get('body') || '');
+    const result = await addExternalReply(id, sender, body);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to add reply');
+    }
+  }
+
+  async function removeEmail() {
+    'use server';
+
+    const result = await deleteEmail(id);
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to delete email');
+    }
+
+    redirect('/emails');
+  }
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="page-header">
         <div>
-          <h1 className="page-title">All Emails</h1>
+          <Link
+            href="/emails"
+            className="btn btn-secondary"
+            style={{ marginBottom: '12px', width: 'fit-content' }}
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Emails</span>
+          </Link>
+          <h1 className="page-title">{email.subject}</h1>
           <p className="page-description">
-            Search, filter, and triage all incoming email communications.
+            View the full record, edit original details, and change status manually.
           </p>
         </div>
-        <Link href="/emails/new" className="btn btn-primary">
-          <PlusCircle size={16} />
-          <span>New Email</span>
-        </Link>
       </div>
 
-      {dbError ? (
-        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-          <p style={{ color: 'var(--status-needs-action)' }}>
-            Could not load email records. Please ensure your database is running and migrated.
-          </p>
-        </div>
-      ) : (
-        <>
-          <form method="GET" action="/emails" className={styles.filterContainer}>
-            <div className={styles.filterHeader}>
-              <div className={styles.filterTitle}>
-                <Filter size={16} style={{ color: 'var(--accent)' }} />
-                <span>Search & Filter</span>
-              </div>
-              {hasActiveFilters && (
-                <Link
-                  href="/emails"
-                  className="btn btn-secondary"
-                  style={{
-                    padding: '4px 8px',
-                    fontSize: '11px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <RotateCcw size={12} />
-                  Reset Filters
-                </Link>
-              )}
+      <div className="detail-grid">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="card">
+            <div className="section-header">
+              <h3>Edit Email Details</h3>
             </div>
 
-            <div className={styles.filterGrid}>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Keyword Search</label>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <form action={saveDetails} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Subject</label>
+                  <input name="subject" defaultValue={email.subject} required />
+                </div>
+                <div className="form-group">
+                  <label>Company</label>
+                  <input name="company" defaultValue={email.company ?? ''} />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Sender Name</label>
+                  <input name="senderName" defaultValue={email.senderName} required />
+                </div>
+                <div className="form-group">
+                  <label>Sender Email</label>
+                  <input name="senderEmail" type="email" defaultValue={email.senderEmail} required />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Priority</label>
+                  <select name="priority" defaultValue={email.priority}>
+                    {Object.values(PRIORITY).map((priority) => (
+                      <option key={priority} value={priority}>
+                        {priority}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Status</label>
+                  <select name="status" defaultValue={email.status}>
+                    {Object.values(EMAIL_STATUS).map((status) => (
+                      <option key={status} value={status}>
+                        {status.replaceAll('_', ' ')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Assigned Contact</label>
                   <input
-                    type="text"
-                    name="q"
-                    placeholder="Subject, department, sender email, assigned contact..."
-                    defaultValue={q}
-                    style={{ width: '100%' }}
+                    name="assignedContactText"
+                    defaultValue={email.assignedContactText ?? ''}
+                    placeholder="e.g. Procurement Team"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Due Date</label>
+                  <input
+                    type="date"
+                    name="dueDate"
+                    defaultValue={formatDateInput(email.dueDate)}
+                    className="date-input"
                   />
                 </div>
               </div>
 
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Status</label>
-                <select name="status" defaultValue={status}>
-                  <option value="">All Statuses</option>
-                  {Object.values(EMAIL_STATUS).map((s) => (
-                    <option key={s} value={s}>
-                      {s.replace('_', ' ')}
-                    </option>
-                  ))}
-                </select>
+              <div className="form-group">
+                <label>Email Body</label>
+                <textarea name="body" defaultValue={email.body} rows={8} required />
               </div>
 
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Priority</label>
-                <select name="priority" defaultValue={priority}>
-                  <option value="">All Priorities</option>
-                  {Object.values(PRIORITY).map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" className="btn btn-primary">
+                  <Save size={14} />
+                  <span>Save Details</span>
+                </button>
               </div>
+            </form>
+          </div>
 
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Assigned Contact</label>
-                <input
-                  type="text"
-                  name="assignedContactText"
-                  placeholder="e.g. Procurement Team"
-                  defaultValue={assignedContactText}
-                />
-              </div>
+          <div className="card">
+            <div className="section-header">
+              <h3>Quick Status Update</h3>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-              <button type="submit" className="btn btn-primary" style={{ minWidth: '100px' }}>
-                <Search size={14} />
-                <span>Apply Filters</span>
+            <form action={saveStatusOnly} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <select
+                name="status"
+                defaultValue={email.status}
+                style={{ minWidth: '220px' }}
+              >
+                {Object.values(EMAIL_STATUS).map((status) => (
+                  <option key={status} value={status}>
+                    {status.replaceAll('_', ' ')}
+                  </option>
+                ))}
+              </select>
+
+              <button type="submit" className="btn btn-secondary">
+                <CheckCircle2 size={14} />
+                <span>Update Status</span>
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
+        </div>
 
-          <EmailTable emails={emails} />
-        </>
-      )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="card">
+            <div className="section-header">
+              <h3>Actions</h3>
+            </div>
+
+            {email.actions.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No actions recorded yet.</p>
+            ) : (
+              <div className="timeline">
+                {(email.actions as EmailActionItem[]).map((action: EmailActionItem) => (
+                  <div key={action.id} className="timeline-item">
+                    <strong>{action.type.replaceAll('_', ' ')}</strong>
+                    <p>{action.description}</p>
+                    <span>{new Date(action.createdAt).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="section-header">
+              <h3>Replies</h3>
+            </div>
+
+            {email.replies.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No replies recorded yet.</p>
+            ) : (
+              <div className="timeline">
+                {(email.replies as EmailReplyItem[]).map((reply: EmailReplyItem) => (
+                  <div key={reply.id} className="timeline-item">
+                    <strong>{reply.sender}</strong>
+                    <p>{reply.body}</p>
+                    <span>{new Date(reply.createdAt).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="section-header">
+              <h3>Audit Log</h3>
+            </div>
+
+            {email.auditLogs.length === 0 ? (
+              <p style={{ color: 'var(--text-secondary)' }}>No audit history available.</p>
+            ) : (
+              <div className="timeline">
+                {(email.auditLogs as AuditLogItem[]).map((log: AuditLogItem) => (
+                  <div key={log.id} className="timeline-item">
+                    <strong>{log.actionType}</strong>
+                    <p>{log.details}</p>
+                    <span>{new Date(log.createdAt).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <div className="section-header">
+              <h3>Danger Zone</h3>
+            </div>
+
+            <form action={removeEmail}>
+              <button type="submit" className="btn btn-danger">
+                <Trash2 size={14} />
+                <span>Delete Email</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

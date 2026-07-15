@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { Priority, EmailStatus } from '@/lib/constants';
 import StatusBadge from './StatusBadge';
 import { formatDate, isOverdue } from '@/lib/utils';
-import { AlertCircle, User, Trash2 } from 'lucide-react';
+import { AlertCircle, User, Trash2, SquarePen } from 'lucide-react';
 import { deleteSelectedEmails } from '@/app/emails/actions';
 
 interface Email {
@@ -61,9 +61,7 @@ export default function EmailTable({ emails }: EmailTableProps) {
     if (!confirmed) return;
 
     setIsDeleting(true);
-
     const result = await deleteSelectedEmails(selectedIds);
-
     setIsDeleting(false);
 
     if (result.success) {
@@ -266,10 +264,11 @@ export default function EmailTable({ emails }: EmailTableProps) {
                   <td>
                     <Link
                       href={`/emails/${email.id}`}
-                      className="btn btn-secondary"
+                      className="btn btn-primary"
                       style={{ padding: '4px 8px', fontSize: '11px' }}
                     >
-                      Triage
+                      <SquarePen size={12} />
+                      <span>Manage</span>
                     </Link>
                   </td>
                 </tr>

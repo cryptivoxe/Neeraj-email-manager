@@ -86,6 +86,88 @@ export async function createEmail(formData: {
   }
 }
 
+export async function updateEmailDetails(formData: {
+  emailId: string;
+  subject: string;
+  senderName: string;
+  senderEmail: string;
+  company?: string;
+  body: string;
+  priority: Priority;
+  status: EmailStatus;
+  dueDate?: string;
+  assignedContactText?: string;
+}) {
+  try {
+    const manager = await getOrCreateManager();
+
+    const existingEmail = await db.email.findUnique({
+      where: { id: formData.emailId },
+      select: {
+        subject: true,
+        senderName: true,
+        senderEmail: true,
+        company: true,
+        body: true,
+        priority: true,
+        status: true,
+        dueDate: true,
+        assignedContactText: true,
+      },
+    });
+
+    if (!existingEmail) {
+      throw new Error('Email not found');
+    }
+
+    const cleanAssignedContact = formData.assignedContactText?.trim() || null;
+    const cleanCompany = formData.company?.trim() || null;
+
+    const bodySnippet =
+      formData.body.length > 150
+        ? formData.body.substring(0, 150) + '...'
+        : formData.body;
+
+    await db.email.update({
+      where: { id: formData.emailId },
+      data: {
+        subject: formData.subject,
+        senderName: formData.senderName,
+        senderEmail: formData.senderEmail,
+        company: cleanCompany,
+        body: formData.body,
+        bodySnippet,
+        priority: formData.priority,
+        status: formData.status,
+        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        assignedContactText: cleanAssignedContact,
+      },
+    });
+
+    await db.auditLog.create({
+      data: {
+        emailId: formData.emailId,
+        actionType: 'DETAILS_UPDATED',
+        details: `Email details updated manually. Previous status: ${existingEmail.status}, New status: ${formData.status}.`,
+        performedById: manager.id,
+      },
+    });
+
+    revalidatePath('/');
+    revalidatePath('/emails');
+    revalidatePath(`/emails/${formData.emailId}`);
+
+    return { success: true };
+  } catch (error: unknown) {
+    console.error('Error in updateEmailDetails:', error);
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update email details',
+    };
+  }
+}
+
 export async function addEmailAction(
   emailId: string,
   type: ActionType,
