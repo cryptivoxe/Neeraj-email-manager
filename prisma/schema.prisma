@@ -20,6 +20,7 @@ enum Priority {
 
 enum EmailStatus {
   NEEDS_ACTION
+  WIP
   WAITING_REPLY
   FORWARDED
   CLOSED

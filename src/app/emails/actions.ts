@@ -205,6 +205,9 @@ export async function addEmailAction(
     } else if (type === ACTION_TYPE.REPLY) {
       statusToUpdate = EMAIL_STATUS.WAITING_REPLY;
       detailsStr = `Action REPLY sent. Status updated to WAITING_REPLY. Description: "${description.substring(0, 50)}"`;
+    } else if (type === ACTION_TYPE.FOLLOW_UP) {
+      statusToUpdate = EMAIL_STATUS.WIP;
+      detailsStr = `Action FOLLOW_UP recorded. Status updated to WIP. Description: "${description.substring(0, 50)}"`;
     }
 
     if (statusToUpdate) {
@@ -303,7 +306,7 @@ export async function updateEmailAssignee(
         : null;
 
     const newStatus = cleanAssignedContact
-      ? EMAIL_STATUS.FORWARDED
+      ? EMAIL_STATUS.WIP
       : EMAIL_STATUS.NEEDS_ACTION;
 
     await db.email.update({
@@ -331,7 +334,7 @@ export async function updateEmailAssignee(
         emailId,
         actionType: 'REASSIGNMENT',
         details: cleanAssignedContact
-          ? `Assigned to ${cleanAssignedContact}. Status changed to FORWARDED.`
+          ? `Assigned to ${cleanAssignedContact}. Status changed to WIP.`
           : 'Assignment removed. Status reverted to NEEDS_ACTION.',
         performedById: manager.id,
       },

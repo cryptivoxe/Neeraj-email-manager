@@ -260,7 +260,7 @@ export default function TriagePanel({
               placeholder="e.g. Riya Sharma / Procurement Team"
             />
             <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Adding an assigned contact will automatically change status to <strong>FORWARDED</strong>.
+              Adding an assigned contact will automatically change status to <strong>WIP</strong>.
             </p>
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading}>
