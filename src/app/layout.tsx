@@ -1,11 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import Sidebar from '@/components/Sidebar';
-import Header from '@/components/Header';
 import { db } from '@/lib/db';
-import styles from '@/styles/layout.module.css';
 import { Suspense } from 'react';
+import AppShell from '@/components/AppShell';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -59,18 +57,15 @@ export default async function RootLayout({
   return (
     <html lang="en" className={inter.className}>
       <body>
-        <div className={styles.layout}>
-          <Sidebar currentUser={currentUser} />
-          <div className={styles.main}>
-            <Suspense fallback={<header className={styles.header}>Loading...</header>}>
-              <Header
-                needsActionCount={needsActionCount}
-                waitingCount={waitingCount}
-              />
-            </Suspense>
-            <div className={styles.content}>{children}</div>
-          </div>
-        </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <AppShell
+            currentUser={currentUser}
+            needsActionCount={needsActionCount}
+            waitingCount={waitingCount}
+          >
+            {children}
+          </AppShell>
+        </Suspense>
       </body>
     </html>
   );

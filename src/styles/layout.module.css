@@ -1,22 +1,34 @@
 .layout {
   display: flex;
-  height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
   background-color: var(--background);
+  position: relative;
+}
+
+.desktopSidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100dvh;
+  flex-shrink: 0;
+}
+
+.mobileSidebarWrapper {
+  display: none;
 }
 
 .sidebar {
-  width: 260px;
+  width: 100%;
+  height: 100%;
   background-color: var(--panel-bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .brand {
-  height: 64px;
+  height: var(--header-height);
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -25,6 +37,11 @@
   font-weight: 700;
   color: var(--text-primary);
   gap: 10px;
+  flex-shrink: 0;
+}
+
+.brandIcon {
+  flex-shrink: 0;
 }
 
 .nav {
@@ -34,6 +51,7 @@
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .navLink {
@@ -46,6 +64,7 @@
   font-weight: 500;
   text-decoration: none;
   transition: all 0.15s ease;
+  min-height: 44px;
 }
 
 .navLink:hover {
@@ -70,6 +89,7 @@
   align-items: center;
   gap: 12px;
   background-color: rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
 .avatar {
@@ -83,12 +103,14 @@
   justify-content: center;
   font-weight: 600;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 .profileInfo {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .profileName {
@@ -103,24 +125,33 @@
 .profileRole {
   font-size: 11px;
   color: var(--text-secondary);
+  margin-top: 2px;
 }
 
 .main {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
 }
 
+.mobileTopBar {
+  display: none;
+}
+
 .header {
-  height: 64px;
+  height: var(--header-height);
+  min-height: var(--header-height);
   background-color: var(--panel-bg);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   padding: 0 24px;
+  flex-shrink: 0;
 }
 
 .searchBar {
@@ -132,6 +163,7 @@
   border-radius: 6px;
   padding: 6px 12px;
   width: 320px;
+  max-width: 100%;
   transition: all 0.15s ease;
 }
 
@@ -142,6 +174,7 @@
 
 .searchIcon {
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .searchInput {
@@ -151,6 +184,7 @@
   font-size: 13px;
   outline: none;
   width: 100%;
+  min-width: 0;
   padding: 0;
 }
 
@@ -158,6 +192,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
 }
 
 .headerStat {
@@ -166,6 +201,7 @@
   gap: 6px;
   font-size: 13px;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .headerStatValue {
@@ -175,7 +211,204 @@
 
 .content {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 24px;
   background-color: var(--background);
+}
+
+.menuButton,
+.closeMenuButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--panel-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.menuButton:hover,
+.closeMenuButton:hover {
+  border-color: var(--border-hover);
+  background-color: var(--card-bg);
+}
+
+.mobileBrand,
+.mobileSidebarBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sidebarOverlay {
+  display: none;
+}
+
+.mobileSidebarHeader {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .desktopSidebar {
+    width: 220px;
+    min-width: 220px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .searchBar {
+    width: 240px;
+  }
+
+  .searchBar:focus-within {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktopSidebar {
+    display: none;
+  }
+
+  .mobileSidebarWrapper {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--mobile-sidebar-width);
+    height: 100dvh;
+    background-color: var(--panel-bg);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: var(--shadow-lg);
+    z-index: 1001;
+  }
+
+  .mobileSidebarWrapperOpen {
+    transform: translateX(0);
+  }
+
+  .mobileSidebarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 56px;
+    min-height: 56px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--panel-bg);
+  }
+
+  .mobileSidebarWrapper :global(.sidebar) .brand {
+    display: none;
+  }
+
+  .sidebarOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .sidebarOverlayVisible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobileTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 56px;
+    min-height: 56px;
+    padding: 0 16px;
+    background-color: var(--panel-bg);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .header {
+    height: auto;
+    min-height: 64px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .searchBar {
+    width: 100%;
+    order: 2;
+  }
+
+  .searchBar:focus-within {
+    width: 100%;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .headerStat {
+    font-size: 12px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .sidebar .brand {
+    padding: 0 16px;
+  }
+
+  .sidebar .nav {
+    padding: 16px 10px;
+  }
+
+  .sidebar .profile {
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobileTopBar {
+    padding: 0 12px;
+  }
+
+  .header {
+    padding: 12px;
+  }
+
+  .content {
+    padding: 12px;
+  }
+
+  .mobileBrand,
+  .mobileSidebarBrand {
+    font-size: 14px;
+  }
+
+  .headerActions {
+    align-items: flex-start;
+  }
 }

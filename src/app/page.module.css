@@ -1,33 +1,23 @@
 .page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
   display: flex;
   flex: 1;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  min-width: 0;
+  min-height: 100%;
+  background-color: transparent;
+  color: var(--text-primary);
 }
 
 .main {
   display: flex;
   flex: 1;
   width: 100%;
-  max-width: 800px;
+  min-width: 0;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  align-items: stretch;
+  justify-content: flex-start;
+  background-color: transparent;
+  padding: 0;
 }
 
 .intro {
@@ -39,20 +29,18 @@
 }
 
 .intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
+  max-width: 100%;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
 .intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.7;
   color: var(--text-secondary);
 }
 
@@ -64,19 +52,19 @@
 .ctas {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   width: 100%;
-  max-width: 440px;
-  gap: 16px;
+  gap: 12px;
   font-size: 14px;
 }
 
 .ctas a {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
-  height: 40px;
+  min-height: 40px;
   padding: 0 16px;
-  border-radius: 128px;
+  border-radius: 999px;
   border: 1px solid transparent;
   transition: 0.2s;
   cursor: pointer;
@@ -91,52 +79,50 @@ a.primary {
 }
 
 a.secondary {
-  border-color: var(--button-secondary-border);
+  border-color: var(--border);
+  color: var(--text-primary);
+  background: var(--panel-bg);
 }
 
-/* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
   a.primary:hover {
-    background: var(--button-primary-hover);
+    background: var(--accent-hover);
+    color: #ffffff;
     border-color: transparent;
   }
 
   a.secondary:hover {
-    background: var(--button-secondary-hover);
+    background: var(--border);
     border-color: transparent;
   }
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
+@media (max-width: 768px) {
   .intro {
     gap: 16px;
   }
 
   .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
+    font-size: 24px;
+  }
+
+  .intro p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .ctas {
+    flex-direction: column;
+  }
+
+  .ctas a {
+    width: 100%;
+    min-height: 44px;
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+@media (max-width: 480px) {
+  .intro h1 {
+    font-size: 20px;
   }
 }

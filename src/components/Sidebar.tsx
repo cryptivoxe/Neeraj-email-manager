@@ -51,8 +51,7 @@ export default function Sidebar({ currentUser }: SidebarProps) {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
-            pathname === item.href ||
-            pathname.startsWith(item.href + '/');
+            pathname === item.href || pathname.startsWith(item.href + '/');
 
           return (
             <Link
@@ -76,8 +75,12 @@ export default function Sidebar({ currentUser }: SidebarProps) {
             .map((n) => n[0])
             .join('')}
         </div>
+
         <div className={styles.profileInfo}>
           <span className={styles.profileName}>{user.name}</span>
+          {user.role ? (
+            <span className={styles.profileRole}>{user.role}</span>
+          ) : null}
         </div>
       </div>
     </aside>
